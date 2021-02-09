@@ -10,6 +10,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -33,13 +34,6 @@ public class MainActivity extends AppCompatActivity {
     private static String IP_ADDRESS = "qjsqjsaos.dothome.co.kr";
     private static String TAG = "phptest";
 
-    private EditText mEditTextName;
-    private EditText mEditTextCountry;
-    private TextView mTextViewResult;
-    private ArrayList<PersonalData> mArrayList;
-    private UsersAdapter mAdapter;
-    private RecyclerView mRecyclerView;
-    private EditText mEditTextSearchKeyword;
     private String mJsonString;
 
 
@@ -48,26 +42,21 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mTextViewResult = (TextView)findViewById(R.id.textView_main_result);
-        mRecyclerView = (RecyclerView) findViewById(R.id.listView_main_list);
-        mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-
-        mTextViewResult.setMovementMethod(new ScrollingMovementMethod());
 
 
 
-        mArrayList = new ArrayList<>();
 
-        mAdapter = new UsersAdapter(this, mArrayList);
-        mRecyclerView.setAdapter(mAdapter);
+
+
+
+
 
 
         Button button_all = (Button) findViewById(R.id.button_main_all);
         button_all.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
 
-                mArrayList.clear();
-                mAdapter.notifyDataSetChanged();
+
 
                 GetData task = new GetData();
                 task.execute( "http://" + IP_ADDRESS + "/getjson.php", "");
@@ -97,12 +86,12 @@ public class MainActivity extends AppCompatActivity {
             super.onPostExecute(result);
 
             progressDialog.dismiss();
-            mTextViewResult.setText(result);
+
             Log.d(TAG, "response - " + result);
 
             if (result == null){
 
-                mTextViewResult.setText(errorString);
+               Toast.makeText(getApplicationContext(),"오류입니다. 문의 부탁드립니다." , Toast.LENGTH_SHORT).show();
             }
             else {
 
@@ -179,7 +168,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void showResult(){
 
-        String TAG_JSON="webnautes";
+        String TAG_JSON="qjsqjsaos";
         String TAG_ID = "id";
         String TAG_EMAIL = "email";
         String TAG_PW ="pw";
@@ -188,25 +177,27 @@ public class MainActivity extends AppCompatActivity {
         try {
             JSONObject jsonObject = new JSONObject(mJsonString);
             JSONArray jsonArray = jsonObject.getJSONArray(TAG_JSON);
+            TextView textView = findViewById(R.id.answer);
 
             for(int i=0;i<jsonArray.length();i++){
                 JSONObject item = jsonArray.getJSONObject(i);
 
                 String id = item.getString(TAG_ID);
+                Log.d(TAG,id);
                 String email = item.getString(TAG_EMAIL);
                 String pw = item.getString(TAG_PW);
 
-                PersonalData personalData = new PersonalData();
 
-                personalData.setMember_id(id);
-                personalData.setMember_email(email);
-                personalData.setMember_pw(pw);
+                String good = textView.getText().toString();
 
-                mArrayList.add(personalData);
-                mAdapter.notifyDataSetChanged();
+                if(id.matches(good)){
+                    Toast.makeText(getApplicationContext(),"성공", Toast.LENGTH_SHORT).show();
+                    Log.d("oo",id);
+                    Log.d("oo",good);
+                }
+
 
             }
-
 
 
         } catch (JSONException e) {
